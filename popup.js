@@ -1,7 +1,16 @@
-document.getElementById('summarizeButton').addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', () => {
+    runSummarize();
+});
+
+function runSummarize(promptType = 'initial') {
     const spinner = document.getElementById('loadingSpinner');
+    const responseButtons = document.querySelector('.response-buttons');
+    const summaryDiv = document.getElementById('summary');
+
     spinner.style.display = 'block'; // Show the spinner
-    
+    responseButtons.style.display = 'none'; // Hide buttons
+    summaryDiv.textContent = ''; // Clear previous summary
+
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         let activeTab = tabs[0];
         let activeTabUrl = activeTab.url;
@@ -10,24 +19,51 @@ document.getElementById('summarizeButton').addEventListener('click', () => {
             chrome.scripting.executeScript({
                 target: { tabId: activeTab.id },
                 function: summarizePage,
+                args: [promptType]
             });
         } else {
             alert('This extension cannot run on this URL.');
             spinner.style.display = 'none'; // Hide the spinner
         }
     });
-});
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const spinner = document.getElementById('loadingSpinner');
     if (message.action === 'displaySummary') {
         document.getElementById('summary').textContent = message.summary;
         spinner.style.display = 'none'; // Hide the spinner
+        document.querySelector('.response-buttons').style.display = 'block'; // Show buttons
     }
 });
 
-async function summarizePage() {
+document.getElementById('retryButton').addEventListener('click', () => {
+    runSummarize('initial'); // Run the initial summarize function
+});
+
+document.getElementById('shorterButton').addEventListener('click', () => {
+    runSummarize('shorter'); // Run the summarize function with shorter prompt
+});
+
+document.getElementById('longerButton').addEventListener('click', () => {
+    runSummarize('longer'); // Run the summarize function with longer prompt
+});
+
+async function summarizePage(promptType) {
     const pageContent = document.body.innerText;
+    let prompt;
+
+    switch(promptType) {
+        case 'shorter':
+            prompt = 'Give me a very short TLDR summary. Start your reply with "Here is a TLDR summary:". Here is the content: ';
+            break;
+        case 'longer':
+            prompt = 'Regenerate a detailed summary focusing on different aspects. Start your reply with "Here is a thorough summary:". Give me a section for: Summary, Key Points, Perspective. Here is the content: ';
+            break;
+        default:
+            prompt = 'Summarize the following detailed information into a concise yet comprehensive summary, focusing on key points and important details. No longer than 2 paragraphs. Start your reply with "Here is a summary:". Here is the content: ';
+    }
+
     chrome.storage.sync.get('aiUrl', async (data) => {
         if (!data.aiUrl) {
             alert('Please set the local AI URL in the extension options.');
@@ -46,7 +82,7 @@ async function summarizePage() {
                     messages: [
                         {
                             role: 'user',
-                            content: 'Summarize the following detailed information into a concise yet comprehensive summary, focusing on key points and important details. Avoid adding introductory or concluding remarks such as "Here is a summary:"' + pageContent
+                            content: prompt + pageContent
                         }
                     ]
                 })
