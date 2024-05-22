@@ -40,3 +40,8 @@ node proxy.js
 
 This will start the proxy server at http://localhost:3000, which will forward requests to the Ollama service and handle CORS issues.
 Now, update your Chrome extension to use the proxy server URL (http://localhost:3000/v1/chat/completions) instead of directly accessing the Ollama service. This should resolve the CORS issues.
+
+![image](https://github.com/jjmerelo/Local-AI-ChromeExtension/assets/169418683/e6ff9772-ea96-4d39-a4ee-839ea7d4d98e)
+![image](https://github.com/jjmerelo/Local-AI-ChromeExtension/assets/169418683/0b479859-862f-4bb3-b720-3614333f2d11)
+
+
