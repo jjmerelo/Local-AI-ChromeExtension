@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Summary Extension",
+    "version": "1.0",
+    "description": "Summarize websites and YouTube videos using localAI",
+    "permissions": [
+      "activeTab",
+      "contextMenus",
+      "storage",
+      "scripting"
+    ],
+    "host_permissions": [
+        "http://localhost/*"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "options_page": "options.html"
+}
